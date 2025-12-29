@@ -22,7 +22,7 @@ with col1:
     st.image("assets/logo.png", width=120)
 with col2:
     st.title("GridGuard")
-    st.caption("Multi‑Horizon Electricity Demand Forecasting for Grid Sustainability and Resilience")
+    st.caption("Electricity Demand Forecasting System for Grid Sustainability and Resilience")
 
 st.divider()
 
@@ -32,13 +32,13 @@ st.divider()
 st.sidebar.markdown("## About GridGuard")
 st.sidebar.markdown(
     """
-GridGuard helps estimate short‑term electricity demand so grid operators
+GridGuard helps estimate short term electricity demand so grid operators
 can see stress coming before it becomes a problem.
 
 It’s designed to support:
 - Early blackout prevention
 - Smarter use of renewables and storage
-- Less reliance on emergency fossil‑fuel generators
+- Less reliance on emergency fossil fuel generators
 
 The goal is simple: make the grid more reliable, cleaner, and easier to plan for.
 """
@@ -48,7 +48,7 @@ The goal is simple: make the grid more reliable, cleaner, and easier to plan for
 # GitHub link
 # -------------------------------------------------
 st.sidebar.markdown(
-    "[View the project on GitHub](https://github.com/chaitanya-melnatami/GridGuard)"
+    "[View the project on GitHub](https://github.com/chaitanya-melnatami/GridGuard-App)"
 )
 st.sidebar.divider()
 
@@ -274,10 +274,10 @@ else:
     st.info(
         "This view compares past model predictions against real demand data. "
         "It’s meant to show overall accuracy trends. "
-        "Live decisions should be based on the Live Forecast page."
+        "Live decisions are based on the Live Forecast page."
     )
 
 # -------------------------------------------------
 # Footer
 # -------------------------------------------------
-st.caption("GridGuard — Built for sustainability, resilience, and global welfare")
+st.caption("GridGuard — Built for sustainability, resilience and awareness")
