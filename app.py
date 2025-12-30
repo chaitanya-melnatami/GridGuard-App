@@ -96,6 +96,21 @@ MONTHS = {
 }
 
 # -------------------------------------------------
+# Load historical demand percentiles (city-specific)
+# -------------------------------------------------
+@st.cache_data
+def load_percentiles(path):
+    df = pd.read_csv(path)
+    return {
+        "p10": np.percentile(df["demand_mw"], 10),
+        "p25": np.percentile(df["demand_mw"], 25),
+        "p75": np.percentile(df["demand_mw"], 75),
+        "p90": np.percentile(df["demand_mw"], 90)
+    }
+
+PCTS = load_percentiles(cfg["data"])
+
+# -------------------------------------------------
 # Live forecast page
 # -------------------------------------------------
 if page == "Live Forecast":
@@ -124,24 +139,6 @@ if page == "Live Forecast":
         hour = st.slider("Hour of Day", 0, 23, 14)
 
     month = MONTHS[month_name]
-
-    # -------------------------------------------------
-    # Simple input sanity checks
-    # -------------------------------------------------
-    unrealistic = False
-    warnings = []
-
-    if temp >= 45:
-        unrealistic = True
-        warnings.append("Extreme temperature detected")
-    if demand >= 60000:
-        unrealistic = True
-        warnings.append("Abnormally high demand input")
-
-    if unrealistic:
-        st.warning("Unusual inputs detected:")
-        for w in warnings:
-            st.write(f"- {w}")
 
     # -------------------------------------------------
     # Feature engineering
@@ -178,19 +175,25 @@ if page == "Live Forecast":
     )
 
     # -------------------------------------------------
-    # Risk assessment logic
+    # ✅ FIXED TWO-SIDED RISK ASSESSMENT
     # -------------------------------------------------
     delta_pct = ((prediction - demand) / demand) * 100
 
-    if delta_pct < 5 and not unrealistic:
-        risk = "🟢 Low Risk"
-        reason = "Forecasted demand remains close to current levels."
-    elif delta_pct < 12 or unrealistic:
+    if prediction < PCTS["p10"]:
+        risk = "🔴 High Risk"
+        reason = "Forecasted demand is far below normal historical levels."
+    elif prediction < PCTS["p25"]:
         risk = "🟡 Medium Risk"
-        reason = "Noticeable increase or unusual operating conditions."
+        reason = "Demand is unusually low compared to typical patterns."
+    elif prediction < PCTS["p75"]:
+        risk = "🟢 Low Risk"
+        reason = "Forecasted demand is within normal operating range."
+    elif prediction < PCTS["p90"]:
+        risk = "🟡 Medium Risk"
+        reason = "Demand is elevated compared to historical norms."
     else:
         risk = "🔴 High Risk"
-        reason = "Large projected surge may stress generation capacity."
+        reason = "Forecast approaches historical peak demand levels."
 
     st.subheader("Grid Stress Risk")
     st.markdown(f"### {risk}")
@@ -198,7 +201,7 @@ if page == "Live Forecast":
     st.info(f"Why: {reason}")
 
     # -------------------------------------------------
-    # Projection chart with confidence range
+    # Projection chart
     # -------------------------------------------------
     upper = prediction * 1.1
     lower = prediction * 0.9
